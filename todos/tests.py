@@ -1,5 +1,7 @@
 from django.test import TestCase
 from .models import Todo
+from django.urls import reverse
+from rest_framework import status
 
 class TodoModelTest(TestCase):
     @classmethod
@@ -13,4 +15,21 @@ class TodoModelTest(TestCase):
         self.assertEqual(self.todo.title, "First Todo")
         self.assertEqual(self.todo.body, "A body of text here")
         self.assertEqual(str(self.todo), "First Todo")
+        
+    def test_api_listview(self):
+        response = self.client.get(reverse("todo_list"))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        #self.assertEqual(response.status_code, 200)
+        self.assertEqual(Todo.objects.count(), 1)
+        self.assertContains(response, self.todo)
+
+    def test_api_detailview(self):
+        #response = self.client.get('/api/1')
+        response = self.client.get(reverse('todo_detail', kwargs={"pk": self.todo.pk}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 'First Todo')
+        self.assertContains(response, self.todo)
+        self.assertContains(response, self.todo.body)
+
+
 
